@@ -1,109 +1,159 @@
-from rest_framework import status
-from django.shortcuts import render
-from rest_framework.generics import get_object_or_404
+from rest_framework import status, generics, filters
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 from .models import *
 from .serializers import *
 
 
-class HelloAPI(APIView):
-    def get(self, request):
-        data = {"xabar": "Birinchi API yaratildi!"}
-        return Response(data)
-
-    def post(self, request):
-        data = request.data()
-        return Response(data)
-
-
-class QoshiqchilarAPIView(APIView):
-    def get(self, request):
-        qoshiqchilar = Qoshiqchi.objects.all()
-        serializer = QoshiqchiSerializer(qoshiqchilar, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        malumot = request.data
-        ser = QoshiqchiSerializer(data=malumot)
-        if ser.is_valid():
-            ser.save()
-        return Response(ser.data)
+# class HelloAPI(APIView):
+#     def get(self,request):
+#         data={"xabar":"birinchi API yaratildi!"}
+#         return Response(data)
+#
+#     def post(self,request):
+#         data=request.data
+#         return Response(data)
 
 
-class QoshiqchiAPIView(APIView):
-    def get(self, request, pk):
-        # qoshiqchi = Qoshiqchi.objects.get(id=pk)
-        qoshiqchi = get_object_or_404(Qoshiqchi, id=pk)
-        serializer = QoshiqchiSerializer(qoshiqchi)
-        return Response(serializer.data)
-
-    def put(self, request, pk):
-        qoshiqchi = get_object_or_404(Qoshiqchi, id=pk)
-        ser = QoshiqchiSerializer(qoshiqchi, request.data)
-        if ser.is_valid():
-            ser.save()
-            return Response(ser.data, status=status.HTTP_202_ACCEPTED)
-        return Response(ser.data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-    def patch(self, request, pk):
-        qoshiqchi = get_object_or_404(Qoshiqchi, id=pk)
-        ser = QoshiqchiSerializer(qoshiqchi, data=request.data, partial=True)
-        if ser.is_valid():
-            ser.save()
-            return Response(ser.data, status=status.HTTP_202_ACCEPTED)
-        return Response(ser.data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-    def delete(self, request, pk):
-        try:
-            get_object_or_404(Qoshiqchi, id=pk).delete()
-            data = {"xabar":"Muvaffaqiyatli o'chirildi!"}
-            return Response(data, status=status.HTTP_200_OK)
-        except:
-            data = {"xabar":"Bu id'da qo'shiqchi yo'q!"}
-            return Response(data, status=status.HTTP_404_NOT_FOUND)
+# class QoshiqchiApi(APIView):
+#     def get(self,request,pk):
+#         q=Qoshiqchi.objects.get(id=pk)
+#         serializer=Serializer(q)
 
 
-class AlbomlarAPIView(APIView):
-    def get(self, request):
-        albomlar = Albom.objects.all()
-        serializer = AlbomSerializer(albomlar, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        malumot = request.data
-        ser = AlbomSerializer(data=malumot)
-        if ser.is_valid():
-            ser.save()
-        return Response(ser.data)
-
-
-class AlbomAPIView(APIView):
-    def get(self, request, pk):
-        albom = Albom.objects.get(id=pk)
-        serializer = AlbomSerializer(albom)
-        return Response(serializer.data)
-
-    def put(self, request, pk):
-        albo = Albom.objects.get(id=pk)
-        ser = AlbomSerializer(albo, request.data)
-        if ser.is_valid():
-            ser.save()
-            return Response(ser.data, status=status.HTTP_202_ACCEPTED)
-        return Response(ser.data, status=status.HTTP_406_NOT_ACCEPTABLE)
+# class AlbomlarAPI(APIView):
+#     def get(self,request):
+#         a=Albom.objects.all()
+#         s=AlbomSerializer(a,many=True)
+#         return Response(s.data)
+#     def post(self,request):
+#         m=request.data
+#         s=AlbomSerializer(data=m)
+#         if s.is_valid():
+#             s.save()
+#         return Response(s.data)
 
 
-class QoshiqlarAPIView(APIView):
-    def get(self, request):
-        qoshiqlar = Qoshiq.objects.all()
-        serializer = QoshiqSerializer(qoshiqlar, many=True)
-        return Response(serializer.data)
+# class AlbomApi(APIView):
+#     def get(self,request,pk):
+#         a=Albom.objects.get(id=pk)
+#         s=Serializer(a)
+#         return Response(s.data)
+#     def put(self,request):
+#         m = request.data
+#         s = AlbomSerializer(data=m)
+#         if s.is_valid():
+#             s.save()
+#         return Response(s.data)
 
-    def post(self, request):
-        malumot = request.data
-        ser = QoshiqSerializer(data=malumot)
-        if ser.is_valid():
-            ser.save()
-        return Response(ser.data)
 
+# class QoshiqlarApi(APIView):
+#     def get(self,request):
+#         q=Qoshiq.objects.all()
+#         s=QoshiqSerializer(q,many=True)
+#         return Response(s.data)
+#     def post(self,request):
+#         m = request.data
+#         s=QoshiqlarSerializer(data=m)
+#         if s.is_valid():
+#             s.save()
+#         return Response(s.data)
+
+
+# class QoshiqApi(APIView):
+#     def get(self,request,pk):
+#         q=Qoshiq.objects.get(id=pk)
+#         s=Serializer(q,data=request.data)
+#         return Response(s.data)
+#     def patch(self,request,pk):
+#         q = Qoshiq.objects.get(id=pk)
+#     s = QoshiqPatchSerializer(q,data=request.data,partial=True)
+#     if s.is_valid():
+#         s.save()
+#         return Response(status=status.HTTP_200_OK)
+#     return Response(status=status.HTTP_400_BAD_REQUEST)
+#
+# def post(self, request):
+#     m = request.data
+#     s = QoshiqSerializer(data=m)
+#     if s.is_valid():
+#         s.save()
+#         return Response(s.data)
+#     return Response(s.errors)
+
+
+# class QoshiqchilarVS(ModelViewSet):
+#     queryset = Qoshiqchi.objects.all()
+#     s=QoshiqchiSerializer
+#     @action(detail=True,methods=['get'])
+#     def albomlar(self,request,pk=None):
+#         q=self.get_object()
+#         albomlar=Albom.objects.filter(qoshiqchi=q)
+#         s=AlbomSerializer(albomlar,many=True)
+#         if s.is_valid():
+#             s.save()
+#             return Response(s.data)
+#         else:
+#             return Response(s.errors)
+
+
+# class AlbomlarVS(ModelViewSet):
+#     queryset = Albom.objects.all()
+#     s=AlbomSerializer
+#     permission_classes = [IsAuthenticated]
+#     @action(detail=True, methods=['get'])
+#     def qoshiqar(self, request, pk=None):
+#         q = self.get_object()
+#         qoshiq = Qoshiq.objects.filter(albom=q)
+#         s = QoshiqSerializer(qoshiq, many=True)
+#         if s.is_valid():
+#             s.save()
+#             return Response(s.data)
+#         else:
+#             return Response(s.errors)
+#
+#
+# class QoshiqlarVS(ModelViewSet):
+#     queryset = Qoshiq.objects.all()
+#     s=QoshiqSerializer
+#     @action(detail=True, methods=['get'])
+#     def albomlar(self, request, pk=None):
+#         a = self.get_object()
+#         qoshiqlar = Albom.objects.filter(qoshiq=a)
+#         s = QoshiqSerializer(qoshiqlar, many=True)
+#         if s.is_valid():
+#             s.save()
+#             return Response(s.data)
+#         else:
+#             return Response(s.errors)
+
+
+class QoshiqchilarListCreate(generics.ListCreateAPIView):
+    queryset = Qoshiqchi.objects.all()
+    serializer_class = QoshiqchiSerializer
+
+
+class Qoshiqchi(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Qoshiqchi.objects.all()
+    serializer_class = QoshiqchiSerializer
+    filter_backends = [filters.SearchFilter,filters.OrderingFilter]
+    search_fields=["ism"]
+    ordening_fields=["janr"]
+
+
+class AlbomlarListCreate(generics.ListCreateAPIView):
+    queryset = Albom.objects.all()
+    serializer_class = AlbomSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["nom"]
+    ordening_fields = ["sana"]
+
+
+class Albom(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Albom.objects.all()
+    serializer_class = AlbomSerializer
 
